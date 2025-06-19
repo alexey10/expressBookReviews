@@ -1,4 +1,5 @@
 const express = require('express');
+const axios = require('axios');  // Import Axios
 const jwt = require('jsonwebtoken');
 const regd_users = express.Router();
 
@@ -54,12 +55,39 @@ regd_users.post("/register", (req, res) => {
   }
 
   users.push({ username, password });
-  return res.status(201).json({ message: "User successfully registered." });
+  return res.status(201).json({ message: "User successfully registered. Now you can login" });
 });
 
 // Placeholder for book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
-  return res.status(300).json({ message: "Yet to be implemented" });
+  const isbn = req.params.isbn;
+  const review = req.query.review;
+  const username = req.session.authorization?.username;
+
+  // Check if ISBN exists
+  if (!books[isbn]) {
+    return res.status(404).json({ message: "Book not found with the provided ISBN." });
+  }
+
+  // Check if user is logged in
+  if (!username) {
+    return res.status(401).json({ message: "User not logged in." });
+  }
+
+  // Validate review content
+  if (!review || review.trim().length === 0) {
+    return res.status(400).json({ message: "Review cannot be empty." });
+  }
+
+  // Initialize or update reviews
+  if (!books[isbn].reviews) {
+    books[isbn].reviews = {};
+  }
+
+  // Add or update the review for the current user
+  books[isbn].reviews[username] = review;
+
+  return res.status(200).json({ message: "Review successfully added/updated.", reviews: books[isbn].reviews });
 });
 
 module.exports.authenticated = regd_users;

@@ -1,9 +1,38 @@
 const express = require('express');
+const axios = require('axios');  // Import Axios
 let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
 
+
+/**
+ * Simulated async call using Promise (e.g., fetching books from a remote source)
+ */
+function getBooksPromise() {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve(books);
+        }, 100); // Simulate delay
+    });
+}
+
+// Get book list using Promise
+public_users.get('/books-promise', (req, res) => {
+    getBooksPromise()
+        .then(data => res.status(200).json(data))
+        .catch(err => res.status(500).json({ message: "Failed to fetch books", error: err }));
+});
+
+// Get book list using async/await
+public_users.get('/books-async', async (req, res) => {
+    try {
+        const data = await getBooksPromise();
+        res.status(200).json(data);
+    } catch (err) {
+        res.status(500).json({ message: "Failed to fetch books", error: err });
+    }
+});
 
 public_users.post("/register", (req,res) => {
   //Write your code here
